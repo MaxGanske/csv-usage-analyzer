@@ -18,7 +18,6 @@ FastAPI service foundation for uploading API request-log CSV files and generatin
 3. Start the API:
 
    ```powershell
-   alembic upgrade head
    fastapi dev src/app/main.py
    ```
 
@@ -29,9 +28,13 @@ The initial application exposes `GET /health` and `GET /health/db`. CSV validati
 1. Create a Managed PostgreSQL database in DigitalOcean and add your application as a trusted source.
 2. Copy the database connection string from DigitalOcean. Set it as the App Platform environment variable `DATABASE_URL` with type **Secret**.
 3. Deploy this repository as an App Platform service using the included `deploy/app.yaml`, or configure the service to build from the `Dockerfile`.
-4. The container runs `alembic upgrade head` before starting FastAPI. Check `/health/db` after deployment to verify database connectivity.
+4. Check `/health/db` after deployment to verify database connectivity.
 
 The deployment manifest includes an empty secret placeholder. Set `DATABASE_URL` through App Platform or `doctl` before the service starts; do not commit the actual connection string.
+
+## Scope
+
+Migrating existing production data and handling complex schema upgrades are outside the current scope.
 
 ## Project layout
 
@@ -39,5 +42,4 @@ The deployment manifest includes an empty secret placeholder. Set `DATABASE_URL`
 - `src/app/core/` - application settings
 - `src/app/db/` - database session boundary
 - `src/app/api/` - API route package
-- `alembic/` - database migration placeholder
 - `tests/` - test package placeholder
