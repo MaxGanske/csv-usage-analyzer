@@ -1,0 +1,12 @@
+# Local, generated, and secret files that should not be committed.
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.env
+*.py[cod]
+*.egg-info/
+.coverage
+htmlcov/
+.idea/
+.vscode/*.log

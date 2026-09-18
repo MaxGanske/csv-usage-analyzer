@@ -1,0 +1,9 @@
+# Files not needed in the container image.
+.git
+.venv
+.env
+.pytest_cache
+.ruff_cache
+__pycache__
+*.py[cod]
+tests

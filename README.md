@@ -1,1 +1,43 @@
-# csv-usage-analyzer
+<!-- Project overview, local setup instructions, and scaffold layout. -->
+# CSV Usage Analyzer
+
+FastAPI service foundation for uploading API request-log CSV files and generating usage reports.
+
+## Local setup
+
+1. Create a virtual environment and install dependencies:
+
+   ```powershell
+   py -m venv .venv
+   .\.venv\Scripts\Activate.ps1
+   pip install -e ".[dev]"
+   ```
+
+2. Copy `.env.example` to `.env` and set `DATABASE_URL` to your DigitalOcean Managed PostgreSQL connection string. The application accepts the standard `postgresql://...` URL and converts it for asyncpg.
+
+3. Start the API:
+
+   ```powershell
+   alembic upgrade head
+   fastapi dev src/app/main.py
+   ```
+
+The initial application exposes `GET /health` and `GET /health/db`. CSV validation, report generation, persistence models, and report endpoints are intentionally left for the implementation phase.
+
+## DigitalOcean deployment
+
+1. Create a Managed PostgreSQL database in DigitalOcean and add your application as a trusted source.
+2. Copy the database connection string from DigitalOcean. Set it as the App Platform environment variable `DATABASE_URL` with type **Secret**.
+3. Deploy this repository as an App Platform service using the included `deploy/app.yaml`, or configure the service to build from the `Dockerfile`.
+4. The container runs `alembic upgrade head` before starting FastAPI. Check `/health/db` after deployment to verify database connectivity.
+
+The deployment manifest includes an empty secret placeholder. Set `DATABASE_URL` through App Platform or `doctl` before the service starts; do not commit the actual connection string.
+
+## Project layout
+
+- `src/app/main.py` - FastAPI application entry point
+- `src/app/core/` - application settings
+- `src/app/db/` - database session boundary
+- `src/app/api/` - API route package
+- `alembic/` - database migration placeholder
+- `tests/` - test package placeholder
