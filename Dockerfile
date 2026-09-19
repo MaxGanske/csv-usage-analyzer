@@ -1,4 +1,5 @@
-# Container image definition for running the FastAPI service.
+# Production container definition for the FastAPI service.
+# It installs the package and binds the API to the port expected by App Platform.
 FROM python:3.12-slim
 
 WORKDIR /app

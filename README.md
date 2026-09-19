@@ -1,4 +1,5 @@
-<!-- Project overview, local setup instructions, and scaffold layout. -->
+<!-- Project overview, local setup, API contract, and DigitalOcean deployment guide. -->
+<!-- The document also records prototype scope boundaries and operational assumptions. -->
 # CSV Usage Analyzer
 
 FastAPI service foundation for uploading API request-log CSV files and generating usage reports.
@@ -13,7 +14,7 @@ FastAPI service foundation for uploading API request-log CSV files and generatin
    pip install -e ".[dev]"
    ```
 
-2. Copy `.env.example` to `.env` and set `DATABASE_URL` to your DigitalOcean Managed PostgreSQL connection string. The application accepts the standard `postgresql://...` URL and converts it for asyncpg.
+2. Copy `.env.example` to `.env` and set `DATABASE_URL` to your database connection string. The application accepts the standard `postgresql://...` URL and converts it for asyncpg.
 
 3. Start the API:
 
@@ -21,7 +22,15 @@ FastAPI service foundation for uploading API request-log CSV files and generatin
    fastapi dev src/app/main.py
    ```
 
-The initial application exposes `GET /health` and `GET /health/db`. CSV validation, report generation, persistence models, and report endpoints are intentionally left for the implementation phase.
+The application exposes `GET /health` and `GET /health/db` alongside the report API below.
+
+## Report API
+
+- `POST /reports` - upload a CSV file and create a report
+- `GET /reports` - list reports
+- `GET /reports/{report_id}` - retrieve one report
+
+The upload must contain `request_id`, `service`, `status_code`, `latency_ms`, and `tokens_used` columns. Report updates and deletes are not supported in this prototype.
 
 ## DigitalOcean deployment
 

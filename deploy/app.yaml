@@ -1,4 +1,5 @@
-# DigitalOcean App Platform deployment template.
+# DigitalOcean App Platform deployment template for the containerized API.
+# Runtime secrets, especially DATABASE_URL, must be supplied through the platform.
 name: csv-usage-analyzer
 region: nyc
 services:

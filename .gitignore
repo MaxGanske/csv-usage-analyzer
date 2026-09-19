@@ -1,4 +1,5 @@
-# Local, generated, and secret files that should not be committed.
+# Version-control exclusions for local environments, generated output, and secrets.
+# These patterns keep developer-specific files out of the deployment source tree.
 .venv/
 __pycache__/
 .pytest_cache/

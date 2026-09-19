@@ -1,4 +1,5 @@
-<!-- Initial product requirements for the CSV usage reporting API. -->
+<!-- Product requirements and agreed scope for the CSV usage reporting API. -->
+<!-- This file is the functional reference for the prototype implementation. -->
 TechStack Python and FastAPI
 
 to be deployed on digital ocean - we will use digital ocean's postgres DB

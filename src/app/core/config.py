@@ -1,4 +1,5 @@
-# Environment-backed application settings.
+# Environment-backed settings for local development and DigitalOcean deployment.
+# Secrets are supplied through environment variables rather than committed files.
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -13,7 +14,7 @@ class Settings(BaseSettings):
 
     @property
     def async_database_url(self) -> str:
-        """Return a PostgreSQL URL in the format expected by asyncpg."""
+        """Normalize standard PostgreSQL URLs and SSL options for asyncpg."""
         parts = urlsplit(self.database_url)
         scheme = parts.scheme
         if scheme == "postgres":
