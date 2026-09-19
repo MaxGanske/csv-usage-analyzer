@@ -1,5 +1,3 @@
-# Environment-backed settings for local development and DigitalOcean deployment.
-# Secrets are supplied through environment variables rather than committed files.
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from pydantic_settings import BaseSettings, SettingsConfigDict

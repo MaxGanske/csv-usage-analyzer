@@ -1,13 +1,9 @@
-# Pydantic response contracts for the public report endpoints.
-# These schemas keep database objects separate from the external API shape.
 from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict
 
 
 class ReportResponse(BaseModel):
-    """Serialized report summary returned by create, list, and detail endpoints."""
-
     model_config = ConfigDict(from_attributes=True)
 
     id: str

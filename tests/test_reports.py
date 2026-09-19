@@ -1,5 +1,4 @@
-# Report API tests using an isolated in-memory SQLite database.
-# The dependency override exercises route behavior without touching production data.
+import asyncio
 from collections.abc import AsyncIterator
 
 import httpx
@@ -13,7 +12,6 @@ from app.main import app
 
 @pytest.fixture
 async def client() -> AsyncIterator[httpx.AsyncClient]:
-    """Provide an HTTP client connected to a fresh isolated report database."""
     engine = create_async_engine("sqlite+aiosqlite:///:memory:")
     session_factory = async_sessionmaker(engine, expire_on_commit=False)
 
@@ -41,7 +39,6 @@ CSV_CONTENT = (
 
 @pytest.mark.asyncio
 async def test_create_list_and_get_report(client: httpx.AsyncClient) -> None:
-    """A valid upload should create, list, and retrieve one report."""
     response = await client.post(
         "/reports",
         files={"file": ("usage.csv", CSV_CONTENT, "text/csv")},
@@ -66,7 +63,6 @@ async def test_create_list_and_get_report(client: httpx.AsyncClient) -> None:
 
 @pytest.mark.asyncio
 async def test_create_report_rejects_invalid_csv(client: httpx.AsyncClient) -> None:
-    """An upload missing required headers should return a client error."""
     response = await client.post(
         "/reports",
         files={"file": ("usage.csv", b"request_id,service\nreq-1,users\n", "text/csv")},
@@ -78,7 +74,79 @@ async def test_create_report_rejects_invalid_csv(client: httpx.AsyncClient) -> N
 
 @pytest.mark.asyncio
 async def test_get_report_returns_404_for_unknown_id(client: httpx.AsyncClient) -> None:
-    """A report identifier absent from the database should return 404."""
     response = await client.get("/reports/does-not-exist")
 
     assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("status_code", "latency_ms", "tokens_used", "message"),
+    [
+        (99, "10", "4", "status_code"),
+        (600, "10", "4", "status_code"),
+        (200, "10001", "4", "latency_ms"),
+        (200, "10", "10001", "tokens_used"),
+        (200, "NaN", "4", "latency_ms"),
+    ],
+)
+async def test_create_report_rejects_out_of_range_values(
+    client: httpx.AsyncClient,
+    status_code: int,
+    latency_ms: str,
+    tokens_used: str,
+    message: str,
+) -> None:
+    csv_content = (
+        "request_id,service,status_code,latency_ms,tokens_used\n"
+        f"req-1,users,{status_code},{latency_ms},{tokens_used}\n"
+    ).encode()
+    response = await client.post(
+        "/reports",
+        files={"file": ("usage.csv", csv_content, "text/csv")},
+    )
+
+    assert response.status_code == 400
+    assert message in response.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_create_report_accepts_validation_boundaries(client: httpx.AsyncClient) -> None:
+    csv_content = (
+        b"request_id,service,status_code,latency_ms,tokens_used\n"
+        b"req-1,users,100,10000,10000\n"
+        b"req-2,users,599,0,0\n"
+    )
+    response = await client.post(
+        "/reports",
+        files={"file": ("usage.csv", csv_content, "text/csv")},
+    )
+
+    assert response.status_code == 201
+
+
+@pytest.mark.asyncio
+async def test_concurrent_report_creation_preserves_all_reports(
+    client: httpx.AsyncClient,
+) -> None:
+    csv_template = (
+        "request_id,service,status_code,latency_ms,tokens_used\n"
+        "{request_id},users,200,10,4\n"
+    )
+
+    async def create_report(index: int) -> httpx.Response:
+        csv_content = csv_template.format(request_id=f"req-{index}").encode()
+        return await client.post(
+            "/reports",
+            files={"file": (f"usage-{index}.csv", csv_content, "text/csv")},
+        )
+
+    responses = await asyncio.gather(*(create_report(index) for index in range(10)))
+
+    assert all(response.status_code == 201 for response in responses)
+    report_ids = {response.json()["id"] for response in responses}
+    assert len(report_ids) == 10
+
+    list_response = await client.get("/reports")
+    assert list_response.status_code == 200
+    assert len(list_response.json()) == 10
