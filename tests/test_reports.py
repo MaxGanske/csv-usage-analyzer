@@ -51,6 +51,16 @@ async def test_create_list_and_get_report(client: httpx.AsyncClient) -> None:
     assert report["average_latency_ms"] == 15.25
     assert report["successful_requests"] == 1
     assert report["failed_requests"] == 1
+    assert report["failure_rate"] == 0.5
+    assert report["service_breakdown"] == {
+        "users": {
+            "request_count": 2,
+            "total_tokens": 10,
+            "average_latency_ms": 15.25,
+            "failed_requests": 1,
+            "failure_rate": 0.5,
+        }
+    }
 
     list_response = await client.get("/reports")
     assert list_response.status_code == 200
@@ -123,6 +133,43 @@ async def test_create_report_accepts_validation_boundaries(client: httpx.AsyncCl
     )
 
     assert response.status_code == 201
+
+
+@pytest.mark.asyncio
+async def test_create_report_rejects_duplicate_request_ids(client: httpx.AsyncClient) -> None:
+    csv_content = (
+        b"request_id,service,status_code,latency_ms,tokens_used\n"
+        b"req-1,users,200,10,4\n"
+        b"req-1,users,200,10,4\n"
+    )
+    response = await client.post(
+        "/reports",
+        files={"file": ("usage.csv", csv_content, "text/csv")},
+    )
+
+    assert response.status_code == 400
+    assert "duplicate request_id" in response.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_create_report_rejects_malformed_rows_and_duplicate_headers(
+    client: httpx.AsyncClient,
+) -> None:
+    malformed_row = (
+        b"request_id,service,status_code,latency_ms,tokens_used\n"
+        b"req-1,users,200,10,4,unexpected\n"
+    )
+    duplicate_header = (
+        b"request_id,service,status_code,latency_ms,tokens_used,tokens_used\n"
+        b"req-1,users,200,10,4,4\n"
+    )
+
+    for csv_content in (malformed_row, duplicate_header):
+        response = await client.post(
+            "/reports",
+            files={"file": ("usage.csv", csv_content, "text/csv")},
+        )
+        assert response.status_code == 400
 
 
 @pytest.mark.asyncio

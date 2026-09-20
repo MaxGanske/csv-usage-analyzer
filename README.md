@@ -30,7 +30,7 @@ The application exposes `GET /health` and `GET /health/db` alongside the report 
 - `GET /reports` - list reports
 - `GET /reports/{report_id}` - retrieve one report
 
-The upload must contain `request_id`, `service`, `status_code`, `latency_ms`, and `tokens_used` columns. Status codes must be standard HTTP values from `100` through `599`; `latency_ms` and `tokens_used` must be between `0` and `10000`. Report updates and deletes are not supported in this prototype.
+The upload must contain `request_id`, `service`, `status_code`, `latency_ms`, and `tokens_used` columns. Status codes must be standard HTTP values from `100` through `599`; `latency_ms` and `tokens_used` must be between `0` and `10000`; and `request_id` values must be unique within the file. Reports include overall failure rate and per-service breakdowns. Report updates and deletes are not supported in this prototype.
 
 ## DigitalOcean deployment
 

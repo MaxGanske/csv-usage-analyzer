@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from uuid import uuid4
 
-from sqlalchemy import DateTime, Float, Integer, String
+from sqlalchemy import JSON, DateTime, Float, Integer, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -31,3 +31,5 @@ class Report(Base):
     average_latency_ms: Mapped[float] = mapped_column(Float, nullable=False)
     successful_requests: Mapped[int] = mapped_column(Integer, nullable=False)
     failed_requests: Mapped[int] = mapped_column(Integer, nullable=False)
+    failure_rate: Mapped[float] = mapped_column(Float, nullable=False)
+    service_breakdown: Mapped[dict] = mapped_column(JSON, nullable=False)

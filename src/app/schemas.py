@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
@@ -14,3 +15,5 @@ class ReportResponse(BaseModel):
     average_latency_ms: float
     successful_requests: int
     failed_requests: int
+    failure_rate: float
+    service_breakdown: dict[str, dict[str, Any]]
